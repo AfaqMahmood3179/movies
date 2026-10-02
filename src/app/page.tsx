@@ -5,8 +5,10 @@ import {
   getFeaturedFilms,
   getRecentlyAddedFilms,
   getPopularFilms,
+  getFilmsByIndustry,
   getAllFilms,
 } from "@/lib/db";
+import { Film } from "@/types/film";
 import { MovieCard } from "@/components/MovieCard";
 import { AdSlot } from "@/components/AdSlot";
 import {
@@ -42,20 +44,21 @@ const DECADE_LIST = [
 ];
 
 export default async function HomePage() {
-  const [featuredFilms, recentlyAdded, popularFilms] = await Promise.all([
+  const [featuredFilms, hollywoodFilms, bollywoodFilms, southIndianFilms] = await Promise.all([
     getFeaturedFilms(),
-    getRecentlyAddedFilms(8),
-    getPopularFilms(8),
+    getFilmsByIndustry("Hollywood", 6),
+    getFilmsByIndustry("Bollywood", 6),
+    getFilmsByIndustry("South Indian", 6),
   ]);
 
-  const heroFilm = featuredFilms[0] || recentlyAdded[0];
+  const heroFilm = featuredFilms[0] || hollywoodFilms[0];
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "HD MOVIES",
     "url": "https://hdmovies.vercel.app",
-    "description": "Stream legal public domain and Creative Commons feature films from the Internet Archive collection in high definition.",
+    "description": "Stream 1000+ legal free movies from Hollywood, Bollywood, and South Indian cinema in high definition.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://hdmovies.vercel.app/search?q={search_term_string}",
@@ -101,13 +104,18 @@ export default async function HomePage() {
                 <span className="px-2 py-0.5 rounded bg-amber-400 text-black font-extrabold text-xs tracking-wider shadow-md shadow-amber-950/40">
                   HD
                 </span>
+                <span className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                  heroFilm.industry === "Bollywood"
+                    ? "bg-emerald-950 text-emerald-300 border border-emerald-600/50"
+                    : heroFilm.industry === "South Indian"
+                    ? "bg-purple-950 text-purple-300 border border-purple-600/50"
+                    : "bg-amber-950 text-amber-300 border border-amber-600/50"
+                }`}>
+                  {heroFilm.industry}
+                </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-semibold tracking-wide">
                   <Sparkles className="w-3.5 h-3.5" />
-                  Featured Masterpiece
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  {heroFilm.license_name}
+                  Featured
                 </span>
                 <span className="px-2.5 py-1 rounded-full bg-cinema-800/80 border border-cinema-700/80 text-cinema-300 text-xs">
                   {heroFilm.year}
@@ -129,7 +137,7 @@ export default async function HomePage() {
 
               {/* Genres */}
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {heroFilm.genres.map((g) => (
+                {heroFilm.genres.map((g: string) => (
                   <Link
                     key={g}
                     href={`/browse?genre=${encodeURIComponent(g)}`}
@@ -155,7 +163,7 @@ export default async function HomePage() {
                   className="px-5 py-3 rounded-xl bg-cinema-850/90 hover:bg-cinema-750 text-cinema-100 font-medium text-sm border border-cinema-700 transition-colors flex items-center gap-2"
                 >
                   <Info className="w-4 h-4 text-cinema-400" />
-                  <span>Film Details & License</span>
+                  <span>Film Details & Stream</span>
                 </Link>
               </div>
             </div>
@@ -164,31 +172,88 @@ export default async function HomePage() {
       )}
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 mt-10 w-full">
-        {/* Recently Added Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 mt-8 w-full">
+        {/* Industry Fast Hub: Hollywood, Bollywood, South Indian */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            href="/browse?industry=Hollywood"
+            className="p-5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-cinema-900 to-cinema-900 border border-amber-500/30 hover:border-amber-400 transition-all group flex items-center justify-between shadow-lg"
+          >
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                Western Cinema
+              </span>
+              <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                Hollywood Movies
+              </h3>
+              <p className="text-xs text-cinema-400 mt-1">
+                700+ Blockbusters, Oscar Winners & Cult Classics
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1.5 transition-transform" />
+          </Link>
+
+          <Link
+            href="/browse?industry=Bollywood"
+            className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-cinema-900 to-cinema-900 border border-emerald-500/30 hover:border-emerald-400 transition-all group flex items-center justify-between shadow-lg"
+          >
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
+                Hindi Cinema
+              </span>
+              <h3 className="text-xl font-bold text-white group-hover:text-emerald-300 transition-colors">
+                Bollywood Movies
+              </h3>
+              <p className="text-xs text-cinema-400 mt-1">
+                150+ Iconic Blockbusters, Romance & Action
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1.5 transition-transform" />
+          </Link>
+
+          <Link
+            href="/browse?industry=South+Indian"
+            className="p-5 rounded-2xl bg-gradient-to-br from-purple-950/40 via-cinema-900 to-cinema-900 border border-purple-500/30 hover:border-purple-400 transition-all group flex items-center justify-between shadow-lg"
+          >
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400 block mb-1">
+                Pan-Indian Cinema
+              </span>
+              <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">
+                South Indian Movies
+              </h3>
+              <p className="text-xs text-cinema-400 mt-1">
+                200+ Telugu, Tamil, Malayalam & Kannada Hits
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1.5 transition-transform" />
+          </Link>
+        </section>
+
+        {/* Section 1: Hollywood Blockbusters */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                <Clock className="w-5 h-5 text-rose-500" />
-                Recently Added & Restored
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                Popular Hollywood Movies
               </h2>
               <p className="text-xs text-cinema-400 mt-0.5">
-                Freshly indexed feature films from the Internet Archive collection
+                Top-rated English blockbusters and world-renowned classics
               </p>
             </div>
             <Link
-              href="/browse?sort=recent"
-              className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors"
+              href="/browse?industry=Hollywood"
+              className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
             >
-              <span>View All</span>
+              <span>View All Hollywood</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-            {recentlyAdded.map((film, index) => (
-              <MovieCard key={film.id} film={film} priority={index < 4} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+            {hollywoodFilms.map((film: Film, index: number) => (
+              <MovieCard key={film.id} film={film} priority={index < 6} />
             ))}
           </div>
         </section>
@@ -196,29 +261,57 @@ export default async function HomePage() {
         {/* Ad Placement: Between Rows */}
         <AdSlot placement="between-rows" />
 
-        {/* Popular / Most Watched Classics */}
+        {/* Section 2: Best of Bollywood */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                Popular Archival Classics
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                Best of Bollywood
               </h2>
               <p className="text-xs text-cinema-400 mt-0.5">
-                The most downloaded and watched public domain treasures
+                The greatest Hindi movies from romantic epics to high-octane blockbusters
               </p>
             </div>
             <Link
-              href="/browse?sort=popular"
-              className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors"
+              href="/browse?industry=Bollywood"
+              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
             >
-              <span>Explore All</span>
+              <span>View All Bollywood</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-            {popularFilms.map((film) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+            {bollywoodFilms.map((film: Film) => (
+              <MovieCard key={film.id} film={film} />
+            ))}
+          </div>
+        </section>
+
+        {/* Section 3: South Indian Cinema Hits */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                South Indian Cinema Hits
+              </h2>
+              <p className="text-xs text-cinema-400 mt-0.5">
+                Sensational Telugu, Tamil, Malayalam & Kannada pan-Indian masterworks
+              </p>
+            </div>
+            <Link
+              href="/browse?industry=South+Indian"
+              className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+            >
+              <span>View All South Indian</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+            {southIndianFilms.map((film: Film) => (
               <MovieCard key={film.id} film={film} />
             ))}
           </div>

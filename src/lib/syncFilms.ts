@@ -239,6 +239,7 @@ export async function syncFilmsFromInternetArchive(options: {
         rights_checked: true, // Only added when verified
         genres: genres.slice(0, 4),
         director: Array.isArray(doc.creator) ? doc.creator[0] : doc.creator,
+        industry: "Hollywood",
         downloads: parseInt(doc.downloads, 10) || 0,
         updated_at: new Date().toISOString(),
       };
