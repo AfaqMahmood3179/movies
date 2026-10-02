@@ -14,9 +14,12 @@ export function MoviePlayer({ film }: MoviePlayerProps) {
   const [prerollFinished, setPrerollFinished] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [theaterMode, setTheaterMode] = useState(false);
+  const [activeServer, setActiveServer] = useState<"server1" | "server2">("server1");
 
   // Official Internet Archive embed URL format
-  const embedUrl = `https://archive.org/embed/${film.ia_identifier}`;
+  const embedUrl = activeServer === "server1"
+    ? `https://archive.org/embed/${film.ia_identifier}`
+    : `https://archive.org/embed/${film.ia_identifier}?autoplay=1`;
   const sourceDetailsUrl = `https://archive.org/details/${film.ia_identifier}`;
 
   const handleShare = async () => {
@@ -38,17 +41,26 @@ export function MoviePlayer({ film }: MoviePlayerProps) {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              className="px-3 py-1.5 rounded-lg bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-950/40"
+              onClick={() => setActiveServer("server1")}
+              className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-md ${
+                activeServer === "server1"
+                  ? "bg-amber-400 text-black shadow-amber-950/40"
+                  : "bg-cinema-850 hover:bg-cinema-750 text-cinema-300 hover:text-white border border-cinema-700"
+              }`}
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-700 animate-pulse" />
+              <span className={`w-2 h-2 rounded-full ${activeServer === "server1" ? "bg-emerald-700 animate-pulse" : "bg-cinema-500"}`} />
               <span>Server 1 (Archive Cloud HD)</span>
             </button>
             <button
               type="button"
-              onClick={() => setTheaterMode(!theaterMode)}
-              className="px-3 py-1.5 rounded-lg bg-cinema-850 hover:bg-cinema-750 text-cinema-300 hover:text-white border border-cinema-700 text-xs font-medium transition-colors hidden sm:flex items-center gap-1.5"
+              onClick={() => setActiveServer("server2")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                activeServer === "server2"
+                  ? "bg-amber-400 text-black font-bold shadow-md shadow-amber-950/40"
+                  : "bg-cinema-850 hover:bg-cinema-750 text-cinema-300 hover:text-white border border-cinema-700"
+              }`}
             >
-              <span className="w-2 h-2 rounded-full bg-cinema-500" />
+              <span className={`w-2 h-2 rounded-full ${activeServer === "server2" ? "bg-emerald-700 animate-pulse" : "bg-cinema-500"}`} />
               <span>Server 2 (Archive Embed)</span>
             </button>
           </div>

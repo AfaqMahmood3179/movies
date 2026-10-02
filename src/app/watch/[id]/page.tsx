@@ -25,8 +25,10 @@ interface WatchPageProps {
 
 export async function generateStaticParams() {
   const films = await getAllFilms();
-  return films.map((f) => ({ id: f.id }));
+  return films.slice(0, 40).map((f) => ({ id: f.id }));
 }
+
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: WatchPageProps): Promise<Metadata> {
   const { id } = await params;
