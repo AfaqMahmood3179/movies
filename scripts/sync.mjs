@@ -55,14 +55,19 @@ async function runSync() {
 
       const isForbidden =
         rights.includes("all rights reserved") ||
-        licenseurl.includes("all rights reserved");
+        licenseurl.includes("all rights reserved") ||
+        licenseurl.includes("-nc") ||
+        licenseurl.includes("/nc") ||
+        rights.includes("non-commercial") ||
+        rights.includes("noncommercial");
 
       if (isPD && !isForbidden) {
         qualifying++;
         console.log(`  ✅ [QUALIFIED] "${doc.title}" (${doc.year}) - ID: ${doc.identifier}`);
       } else {
         rejected++;
-        console.log(`  ❌ [REJECTED - Not verified PD] "${doc.title}" (${doc.year})`);
+        const reason = isForbidden ? "Forbidden (Copyright or Non-Commercial NC)" : "Unverified licensing";
+        console.log(`  ❌ [REJECTED - ${reason}] "${doc.title}" (${doc.year})`);
       }
     }
 

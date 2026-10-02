@@ -25,7 +25,7 @@ export function verifyPublicDomainLicense(item: {
   const licenseUrl = (item.licenseurl || "").toLowerCase().trim();
   const rights = (item.rights || "").toLowerCase().trim();
 
-  // Explicit exclusion: All rights reserved or copyright restricted
+  // Explicit exclusion 1: All rights reserved or copyright restricted
   const forbiddenPhrases = [
     "all rights reserved",
     "copyrighted",
@@ -44,6 +44,24 @@ export function verifyPublicDomainLicense(item: {
         rejectionReason: `Rejected: contains rights reservation text "${phrase}"`,
       };
     }
+  }
+
+  // Explicit exclusion 2: Non-Commercial (NC) Creative Commons licenses
+  // Since HD MOVIES is an ad-supported site, CC BY-NC / CC BY-NC-SA / CC BY-NC-ND are legally prohibited.
+  if (
+    licenseUrl.includes("-nc") ||
+    licenseUrl.includes("/nc") ||
+    licenseUrl.includes("noncommercial") ||
+    licenseUrl.includes("non-commercial") ||
+    rights.includes("noncommercial") ||
+    rights.includes("non-commercial")
+  ) {
+    return {
+      isValid: false,
+      licenseUrl: "",
+      licenseName: "",
+      rejectionReason: "Rejected: Creative Commons Non-Commercial (NC) license is not allowed on ad-supported sites",
+    };
   }
 
   // 1. Creative Commons Public Domain Mark 1.0 (PDM)
@@ -85,16 +103,22 @@ export function verifyPublicDomainLicense(item: {
     };
   }
 
-  // 4. Creative Commons Open Licenses (CC BY, CC BY-SA, etc.)
+  // 4. Commercial-friendly Creative Commons Open Licenses (CC BY, CC BY-SA)
   if (licenseUrl.includes("creativecommons.org/licenses/")) {
-    let name = "Creative Commons Open License";
-    if (licenseUrl.includes("/by/")) name = "Creative Commons Attribution (CC BY)";
-    if (licenseUrl.includes("/by-sa/")) name = "Creative Commons Attribution-ShareAlike (CC BY-SA)";
-    return {
-      isValid: true,
-      licenseUrl,
-      licenseName: name,
-    };
+    if (licenseUrl.includes("/by/") && !licenseUrl.includes("/by-nc")) {
+      return {
+        isValid: true,
+        licenseUrl,
+        licenseName: "Creative Commons Attribution (CC BY)",
+      };
+    }
+    if (licenseUrl.includes("/by-sa/") && !licenseUrl.includes("/by-nc-sa")) {
+      return {
+        isValid: true,
+        licenseUrl,
+        licenseName: "Creative Commons Attribution-ShareAlike (CC BY-SA)",
+      };
+    }
   }
 
   // If no clear open/public domain license is declared, exclude it!
@@ -272,4 +296,58 @@ export async function syncFilmsFromInternetArchive(options: {
   }
 
   return result;
+}
+
+/**
+ * Fetch full, item-level metadata from the Internet Archive Metadata API.
+ * Endpoint: https://archive.org/metadata/IDENTIFIER
+ */
+export async function fetchFilmMetadata(identifier: string) {
+  const url = `https://archive.org/metadata/${encodeURIComponent(identifier)}`;
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "HDMoviesCrawler/1.0 (Public Domain Metadata Fetcher)",
+      Accept: "application/json",
+    },
+    next: { revalidate: 86400 }, // Cache for 24h
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch metadata for ${identifier}: ${res.statusText}`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Page through large result sets (> 10,000 items) using the Internet Archive Scrape API.
+ * Endpoint: https://archive.org/services/search/v1/scrape
+ */
+export async function scrapeFeatureFilms(options: {
+  cursor?: string;
+  total?: number;
+} = {}) {
+  const scrapeUrl = new URL("https://archive.org/services/search/v1/scrape");
+  scrapeUrl.searchParams.set("q", "collection:feature_films AND mediatype:movies");
+  scrapeUrl.searchParams.append("fields", "identifier,title,year,licenseurl,rights,runtime,genre,downloads,creator");
+  if (options.cursor) {
+    scrapeUrl.searchParams.set("cursor", options.cursor);
+  }
+  if (options.total) {
+    scrapeUrl.searchParams.set("total", options.total.toString());
+  }
+
+  const res = await fetch(scrapeUrl.toString(), {
+    headers: {
+      "User-Agent": "HDMoviesCrawler/1.0 (Public Domain Scrape API)",
+      Accept: "application/json",
+    },
+    next: { revalidate: 0 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Scrape API failed: ${res.statusText}`);
+  }
+
+  return res.json();
 }
