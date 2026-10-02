@@ -16,21 +16,25 @@ interface BrowsePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+const INDUSTRIES = ["All", "Hollywood", "Bollywood", "South Indian"];
+
 const GENRES = [
   "All",
-  "Film Noir",
-  "Horror",
-  "Sci-Fi",
+  "Action",
   "Comedy",
   "Drama",
-  "Mystery",
-  "Silent",
-  "Cult",
-  "Adventure",
+  "Crime",
   "Thriller",
+  "Romance",
+  "Sci-Fi",
+  "Horror",
+  "Adventure",
+  "Mystery",
+  "Film Noir",
+  "Cult",
 ];
 
-const DECADES = ["All", "1920s", "1930s", "1940s", "1950s", "1960s"];
+const DECADES = ["All", "2020s", "2010s", "2000s", "1990s", "1980s", "1970s", "1960s", "1950s"];
 
 const SORT_OPTIONS = [
   { label: "Recently Added", value: "recent" },
@@ -43,6 +47,7 @@ const SORT_OPTIONS = [
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const resolvedParams = await searchParams;
 
+  const currentIndustry = typeof resolvedParams.industry === "string" ? resolvedParams.industry : "All";
   const currentGenre = typeof resolvedParams.genre === "string" ? resolvedParams.genre : "All";
   const currentDecade = typeof resolvedParams.decade === "string" ? resolvedParams.decade : "All";
   const currentSort = (typeof resolvedParams.sort === "string" ? resolvedParams.sort : "recent") as SearchOptions["sortBy"];
@@ -50,17 +55,19 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const currentPage = Math.max(1, parseInt(typeof resolvedParams.page === "string" ? resolvedParams.page : "1", 10) || 1);
 
   const films = await searchFilms(currentQuery, {
+    industry: currentIndustry === "All" ? undefined : currentIndustry,
     genre: currentGenre === "All" ? undefined : currentGenre,
     decade: currentDecade === "All" ? undefined : currentDecade,
     sortBy: currentSort,
   });
 
-  // Pagination (12 films per page, Moviespedia style)
-  const pageSize = 12;
+  // Pagination (24 films per page, Moviespedia style)
+  const pageSize = 24;
   const totalPages = Math.ceil(films.length / pageSize) || 1;
   const paginatedFilms = films.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const hasActiveFilters =
+    currentIndustry !== "All" ||
     currentGenre !== "All" ||
     currentDecade !== "All" ||
     currentSort !== "recent" ||
@@ -69,6 +76,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const buildUrl = (overrideParams: Record<string, string | number | undefined>) => {
     const params = new URLSearchParams();
     if (currentQuery) params.set("q", currentQuery);
+    if (currentIndustry !== "All") params.set("industry", currentIndustry);
     if (currentGenre !== "All") params.set("genre", currentGenre);
     if (currentDecade !== "All") params.set("decade", currentDecade);
     if (currentSort && currentSort !== "recent") params.set("sort", currentSort);
@@ -101,7 +109,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               <span>HD Movies Catalog</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-display">
-              Watch Movies Online for Free
+              {currentIndustry !== "All" ? `${currentIndustry} Movies` : "Watch Movies Online for Free"}
             </h1>
           </div>
 
@@ -126,6 +134,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             </div>
 
             {/* Preserve other filters when searching */}
+            {currentIndustry !== "All" && <input type="hidden" name="industry" value={currentIndustry} />}
             {currentGenre !== "All" && <input type="hidden" name="genre" value={currentGenre} />}
             {currentDecade !== "All" && <input type="hidden" name="decade" value={currentDecade} />}
             {currentSort && <input type="hidden" name="sort" value={currentSort} />}
@@ -148,6 +157,36 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               </Link>
             )}
           </form>
+
+          {/* Filter Pills: Industry (Hollywood, Bollywood, South Indian) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-cinema-400 uppercase tracking-wider">
+              <span>Industry</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {INDUSTRIES.map((ind) => {
+                const isActive = (currentIndustry === "All" && ind === "All") || currentIndustry === ind;
+                const badgeColor =
+                  ind === "Bollywood"
+                    ? isActive ? "bg-emerald-400 text-black font-bold shadow-md shadow-emerald-950/40" : "bg-emerald-950/40 text-emerald-300 border border-emerald-800 hover:bg-emerald-900/50"
+                    : ind === "South Indian"
+                    ? isActive ? "bg-purple-400 text-black font-bold shadow-md shadow-purple-950/40" : "bg-purple-950/40 text-purple-300 border border-purple-800 hover:bg-purple-900/50"
+                    : ind === "Hollywood"
+                    ? isActive ? "bg-amber-400 text-black font-bold shadow-md shadow-amber-950/40" : "bg-amber-950/40 text-amber-300 border border-amber-800 hover:bg-amber-900/50"
+                    : isActive ? "bg-white text-black font-bold shadow-md" : "bg-cinema-850 hover:bg-cinema-750 text-cinema-300 border border-cinema-750";
+
+                return (
+                  <Link
+                    key={ind}
+                    href={buildUrl({ industry: ind === "All" ? undefined : ind, page: 1 })}
+                    className={`text-xs px-3.5 py-1.5 rounded-lg transition-colors font-semibold ${badgeColor}`}
+                  >
+                    {ind}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Filter Pills: Genres */}
           <div className="space-y-1.5">

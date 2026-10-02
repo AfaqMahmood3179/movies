@@ -59,18 +59,33 @@ export function MovieCard({ film, priority = false }: MovieCardProps) {
         </div>
       </div>
 
-      {/* Content */}
+        {/* Content */}
       <div className="flex flex-col flex-1 p-3">
+        <div className="flex items-center justify-between gap-1 mb-1">
+          <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wider uppercase ${
+            film.industry === "Bollywood"
+              ? "bg-emerald-950 text-emerald-300 border border-emerald-600/50"
+              : film.industry === "South Indian"
+              ? "bg-purple-950 text-purple-300 border border-purple-600/50"
+              : "bg-amber-950 text-amber-300 border border-amber-600/50"
+          }`}>
+            {film.industry || "Hollywood"}
+          </span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded bg-cinema-800 text-cinema-300 border border-cinema-700/60 font-mono">
+            FREE
+          </span>
+        </div>
+
         <h3 className="text-sm font-semibold text-cinema-100 group-hover:text-amber-400 transition-colors line-clamp-1">
           {film.title}
         </h3>
 
-        <div className="flex items-center justify-between gap-2 mt-1.5 text-xs text-cinema-400">
+        <div className="flex items-center justify-between gap-2 mt-1 text-xs text-cinema-400">
           <span className="truncate text-[11px] font-medium text-cinema-300">
             {film.genres[0] || "Classic"}
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-cinema-800 text-cinema-300 border border-cinema-700/60 font-mono">
-            FREE
+          <span className="text-[11px] text-cinema-400">
+            {film.year}
           </span>
         </div>
       </div>

@@ -112,18 +112,39 @@ export function Navbar() {
           </form>
 
           {/* Desktop Navigation Links with Dropdowns (HDToday style) */}
-          <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-cinema-200">
+          <nav className="hidden lg:flex items-center gap-4 text-sm font-medium text-cinema-200">
             <Link href="/" className="hover:text-white transition-colors">
               Home
+            </Link>
+
+            <Link
+              href="/browse?industry=Hollywood"
+              className="px-2.5 py-1 rounded-md text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 border border-amber-500/30 transition-all font-semibold text-xs flex items-center gap-1"
+            >
+              <span>Hollywood</span>
+            </Link>
+
+            <Link
+              href="/browse?industry=Bollywood"
+              className="px-2.5 py-1 rounded-md text-emerald-300 hover:text-emerald-200 hover:bg-emerald-950/40 border border-emerald-500/30 transition-all font-semibold text-xs flex items-center gap-1"
+            >
+              <span>Bollywood</span>
+            </Link>
+
+            <Link
+              href="/browse?industry=South+Indian"
+              className="px-2.5 py-1 rounded-md text-purple-300 hover:text-purple-200 hover:bg-purple-950/40 border border-purple-500/30 transition-all font-semibold text-xs flex items-center gap-1"
+            >
+              <span>South Indian</span>
             </Link>
 
             {/* Movies Dropdown */}
             <div className="relative" ref={moviesRef}>
               <button
                 onClick={() => setOpenDropdown(openDropdown === "movies" ? null : "movies")}
-                className="flex items-center gap-1 hover:text-white transition-colors py-2"
+                className="flex items-center gap-1 hover:text-white transition-colors py-2 text-xs font-semibold"
               >
-                <span>Movies</span>
+                <span>Browse All</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-70" />
               </button>
 
@@ -266,6 +287,32 @@ export function Navbar() {
               >
                 Home
               </Link>
+
+              {/* Industry Links for Mobile */}
+              <div className="grid grid-cols-3 gap-2 px-3 py-1">
+                <Link
+                  href="/browse?industry=Hollywood"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-2.5 py-2 text-center rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-300 font-bold text-xs"
+                >
+                  Hollywood
+                </Link>
+                <Link
+                  href="/browse?industry=Bollywood"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-2.5 py-2 text-center rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-xs"
+                >
+                  Bollywood
+                </Link>
+                <Link
+                  href="/browse?industry=South+Indian"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-2.5 py-2 text-center rounded-lg bg-purple-950/60 border border-purple-500/40 text-purple-300 font-bold text-xs"
+                >
+                  South Indian
+                </Link>
+              </div>
+
               <Link
                 href="/popular-movies"
                 onClick={() => setMobileMenuOpen(false)}

@@ -1,3 +1,5 @@
+export type IndustryType = "Hollywood" | "Bollywood" | "South Indian";
+
 export interface Film {
   id: string;
   title: string;
@@ -12,6 +14,10 @@ export interface Film {
   rights_checked: boolean;
   genres: string[];
   director?: string;
+  industry: IndustryType;
+  language?: string;
+  imdb_rating?: number;
+  actors?: string[];
   featured?: boolean;
   downloads?: number;
   created_at?: string;

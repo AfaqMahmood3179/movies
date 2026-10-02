@@ -16,11 +16,15 @@ function sanitizeFilm(film: any): Film {
     license_url: film.license_url || "https://creativecommons.org/publicdomain/mark/1.0/",
     license_name: film.license_name || "Public Domain Mark 1.0",
     ia_identifier: film.ia_identifier,
-    thumbnail: film.thumbnail || `https://archive.org/services/img/${film.ia_identifier}`,
+    thumbnail: film.thumbnail || film.posterUrl || `https://archive.org/services/img/${film.ia_identifier}`,
     backdrop: film.backdrop || undefined,
     rights_checked: Boolean(film.rights_checked),
     genres: Array.isArray(film.genres) ? film.genres : ["Classic"],
     director: film.director || undefined,
+    industry: (film.industry as any) || "Hollywood",
+    language: film.language || (film.industry === "Bollywood" ? "Hindi" : film.industry === "South Indian" ? "Tamil / Telugu" : "English"),
+    imdb_rating: film.imdb_rating ? Number(film.imdb_rating) : undefined,
+    actors: Array.isArray(film.actors) ? film.actors : undefined,
     featured: Boolean(film.featured),
     downloads: Number(film.downloads) || 0,
     created_at: film.created_at || new Date().toISOString(),
@@ -68,6 +72,14 @@ export async function getPopularFilms(limit = 10): Promise<Film[]> {
     .slice(0, limit);
 }
 
+export async function getFilmsByIndustry(industry: string, limit?: number): Promise<Film[]> {
+  const films = await getAllFilms();
+  const filtered = films.filter((f) =>
+    f.industry.toLowerCase() === industry.toLowerCase()
+  );
+  return limit ? filtered.slice(0, limit) : filtered;
+}
+
 export async function getFilmsByGenre(genre: string, limit?: number): Promise<Film[]> {
   const films = await getAllFilms();
   const filtered = films.filter((f) =>
@@ -102,11 +114,13 @@ export async function getFilmById(idOrIdentifier: string): Promise<Film | null> 
 
 export async function getRelatedFilms(currentId: string, genres: string[], limit = 6): Promise<Film[]> {
   const films = await getAllFilms();
+  const current = films.find((f) => f.id === currentId || f.ia_identifier === currentId);
   const candidates = films.filter((f) => f.id !== currentId && f.ia_identifier !== currentId);
 
-  // Score candidates by genre match
+  // Score candidates by industry and genre match
   const scored = candidates.map((film) => {
     let score = 0;
+    if (current && film.industry === current.industry) score += 3;
     for (const g of genres) {
       if (film.genres.includes(g)) score += 2;
     }
@@ -120,6 +134,7 @@ export async function getRelatedFilms(currentId: string, genres: string[], limit
 export interface SearchOptions {
   genre?: string;
   decade?: string;
+  industry?: string;
   sortBy?: "recent" | "year_desc" | "year_asc" | "title" | "popular";
 }
 
@@ -133,7 +148,15 @@ export async function searchFilms(query?: string, options: SearchOptions = {}): 
         f.title.toLowerCase().includes(q) ||
         f.description.toLowerCase().includes(q) ||
         (f.director && f.director.toLowerCase().includes(q)) ||
+        (f.language && f.language.toLowerCase().includes(q)) ||
+        f.industry.toLowerCase().includes(q) ||
         f.genres.some((g) => g.toLowerCase().includes(q))
+    );
+  }
+
+  if (options.industry && options.industry !== "all") {
+    films = films.filter((f) =>
+      f.industry.toLowerCase() === options.industry!.toLowerCase()
     );
   }
 
