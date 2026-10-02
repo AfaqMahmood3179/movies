@@ -144,11 +144,12 @@ export function Navbar() {
                     Latest Restorations
                   </Link>
                   <Link
-                    href="/browse?sort=popular"
+                    href="/popular-movies"
                     onClick={() => setOpenDropdown(null)}
-                    className="block px-3 py-2 rounded-lg hover:bg-cinema-800 text-cinema-200 hover:text-white transition-colors"
+                    className="block px-3 py-2 rounded-lg hover:bg-cinema-800 text-amber-400 font-semibold transition-colors flex items-center justify-between"
                   >
-                    Most Popular
+                    <span>Popular Movies</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-400">HOT</span>
                   </Link>
                   <Link
                     href="/browse?sort=year_desc"
@@ -266,9 +267,17 @@ export function Navbar() {
                 Home
               </Link>
               <Link
+                href="/popular-movies"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-cinema-850 hover:text-white font-semibold text-amber-400 flex items-center justify-between"
+              >
+                <span>Popular Movies</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400">HOT</span>
+              </Link>
+              <Link
                 href="/browse"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-cinema-850 hover:text-white font-semibold text-amber-400"
+                className="px-3 py-2 rounded-lg hover:bg-cinema-850 hover:text-white text-cinema-200"
               >
                 Browse All Movies
               </Link>

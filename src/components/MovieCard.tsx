@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Film } from "@/types/film";
+import { MoviePoster } from "./MoviePoster";
 import { Play, Clock, ShieldCheck, Film as FilmIcon, Star } from "lucide-react";
 
 interface MovieCardProps {
@@ -17,22 +17,14 @@ export function MovieCard({ film, priority = false }: MovieCardProps) {
     >
       {/* Poster Image Container */}
       <div className="relative aspect-poster w-full overflow-hidden bg-cinema-850">
-        {film.thumbnail ? (
-          <Image
-            src={film.thumbnail}
-            alt={`${film.title} poster`}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            priority={priority}
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-            unoptimized
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-cinema-400 bg-cinema-850">
-            <FilmIcon className="w-10 h-10 mb-2 opacity-50" />
-            <span className="text-xs text-center font-medium line-clamp-2">{film.title}</span>
-          </div>
-        )}
+        <MoviePoster
+          src={film.thumbnail}
+          alt={`${film.title} poster`}
+          title={film.title}
+          year={film.year}
+          genre={film.genres[0]}
+          priority={priority}
+        />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-cinema-950 via-cinema-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
