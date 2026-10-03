@@ -33,6 +33,12 @@ function sanitizeFilm(film: any): Film {
 }
 
 export async function getAllFilms(): Promise<Film[]> {
+  // Always initialize with verified 1,100+ Hollywood, Bollywood, and South Indian catalog
+  const filmMap = new Map<string, Film>();
+  SEED_FILMS.filter((f) => f.rights_checked).forEach((film) => {
+    filmMap.set(film.id, film);
+  });
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -42,14 +48,16 @@ export async function getAllFilms(): Promise<Film[]> {
         .order("created_at", { ascending: false });
 
       if (!error && data && data.length > 0) {
-        return data.map(sanitizeFilm);
+        data.map(sanitizeFilm).forEach((film) => {
+          filmMap.set(film.id, film);
+        });
       }
     } catch (err) {
-      console.warn("Supabase fetch failed, falling back to seed films:", err);
+      console.warn("Supabase fetch failed, relying on seed catalog:", err);
     }
   }
 
-  return SEED_FILMS.filter((f) => f.rights_checked);
+  return Array.from(filmMap.values());
 }
 
 export async function getFeaturedFilms(): Promise<Film[]> {
